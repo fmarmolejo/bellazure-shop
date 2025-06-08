@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/bellazure-shop/static/css/main.f0a754c1.css",
+    "main.js": "/bellazure-shop/static/js/main.937d455e.js",
+    "static/js/453.bb283b66.chunk.js": "/bellazure-shop/static/js/453.bb283b66.chunk.js",
+    "index.html": "/bellazure-shop/index.html",
+    "main.f0a754c1.css.map": "/bellazure-shop/static/css/main.f0a754c1.css.map",
+    "main.937d455e.js.map": "/bellazure-shop/static/js/main.937d455e.js.map",
+    "453.bb283b66.chunk.js.map": "/bellazure-shop/static/js/453.bb283b66.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f0a754c1.css",
+    "static/js/main.937d455e.js"
+  ]
+}
