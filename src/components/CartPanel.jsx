@@ -1,19 +1,17 @@
 import { useState, useEffect } from "react";
+import { FaWhatsapp } from "react-icons/fa";
 
 export default function CartPanel({ open, cart, removeFromCart, onClose }) {
-  // Estado para cantidades por producto
   const [quantities, setQuantities] = useState(() =>
     Object.fromEntries(cart.map(item => [item.id, 1]))
   );
 
-  // Actualiza cantidades si el carrito cambia (añade/quita productos)
   useEffect(() => {
     setQuantities(qs => {
       const newQs = { ...qs };
       cart.forEach(item => {
         if (!newQs[item.id]) newQs[item.id] = 1;
       });
-      // Elimina ids que ya no están en el carrito
       Object.keys(newQs).forEach(id => {
         if (!cart.find(item => item.id === Number(id))) delete newQs[id];
       });
@@ -21,7 +19,6 @@ export default function CartPanel({ open, cart, removeFromCart, onClose }) {
     });
   }, [cart]);
 
-  // Cambia la cantidad de un producto
   const handleChange = (id, value) => {
     setQuantities(qs => ({
       ...qs,
@@ -29,9 +26,23 @@ export default function CartPanel({ open, cart, removeFromCart, onClose }) {
     }));
   };
 
-  // Precio fijo por producto
-  const price = 15;
-  const total = cart.reduce((sum, item) => sum + (quantities[item.id] || 1) * price, 0);
+  const total = cart.reduce(
+    (sum, item) => sum + (quantities[item.id] || 1) * (item.precio || 0),
+    0
+  );
+
+  // Generar resumen para WhatsApp
+  const getWhatsappText = () => {
+    if (cart.length === 0) return "";
+    let text = "¡Hola! Quiero realizar el siguiente pedido:%0A%0A";
+    cart.forEach(item => {
+      text += `ID: ${item.id} | ${item.name} | ${item.tipo || ""} | Cantidad: ${quantities[item.id] || 1} | Subtotal: ${(quantities[item.id] || 1) * (item.precio || 0)}€%0A`;
+    });
+    text += `%0ATotal: ${total}€`;
+    return text;
+  };
+
+  const whatsappUrl = `https://api.whatsapp.com/send/?phone=34634416952&text=${getWhatsappText()}`;
 
   return (
     <div
@@ -63,7 +74,14 @@ export default function CartPanel({ open, cart, removeFromCart, onClose }) {
             <ul className="flex flex-col gap-3">
               {cart.map((item) => (
                 <li key={item.id} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
-                  <span className="font-medium text-gray-700">{item.name}</span>
+                  <div className="flex flex-col flex-1">
+                    <span className="font-medium text-gray-700">{item.name}</span>
+                    {item.tipo && (
+                      <span className="text-xs text-gray-500 mt-0.5">
+                        {item.tipo} {item.precio ? ` — ${item.precio}€` : ""}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleChange(item.id, (quantities[item.id] || 1) - 1)}
@@ -76,7 +94,11 @@ export default function CartPanel({ open, cart, removeFromCart, onClose }) {
                       min={1}
                       value={quantities[item.id] || 1}
                       onChange={e => handleChange(item.id, Number(e.target.value))}
-                      className="w-10 text-center border border-gray-200 rounded font-semibold"
+                      className="w-10 text-center border border-gray-200 rounded font-normal"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      style={{ MozAppearance: "textfield" }}
+                      onWheel={e => e.target.blur()}
                     />
                     <button
                       onClick={() => handleChange(item.id, (quantities[item.id] || 1) + 1)}
@@ -85,19 +107,31 @@ export default function CartPanel({ open, cart, removeFromCart, onClose }) {
                     >+</button>
                   </div>
                   <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="ml-2 text-xs text-red-500 hover:underline font-semibold"
+                    onClick={() => removeFromCart(item)}
+                    className="ml-2 text-xs text-red-500 hover:underline font-normal"
                   >
                     Quitar
                   </button>
                 </li>
               ))}
             </ul>
-            <div className="mt-4 flex justify-between items-center border-t pt-4">
-              <span className="font-semibold text-gray-700">Total</span>
-              <span className="font-bold text-salmon text-lg">
-                {total}€
-              </span>
+            <div className="mt-4 flex flex-col gap-3 border-t pt-4">
+              <div className="flex justify-between items-center">
+                <span className="font-normal text-gray-700">Total</span>
+                <span className="font-bold text-salmon text-lg">
+                  {total}€
+                </span>
+              </div>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white bg-green-500 hover:bg-green-600 transition text-base mt-2"
+                style={{ textDecoration: "none" }}
+              >
+                <FaWhatsapp className="text-2xl" />
+                Realizar pedido
+              </a>
             </div>
           </>
         )}

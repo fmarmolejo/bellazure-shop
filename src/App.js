@@ -4,19 +4,9 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import ProductGrid from "./components/ProductGrid";
 import CartPanel from "./components/CartPanel";
-
-const products = [
-  { id: 1, name: "Aire - Loewe", category: "mujer" },
-  { id: 2, name: "CK one - Calvin Klein", category: "mujer" },
-  { id: 3, name: "Carolina Herrera Clásica", category: "mujer" },
-  { id: 4, name: "Chanel nº5", category: "mujer" },
-  { id: 6, name: "Anais anais - Cacharel", category: "mujer" },
-  { id: 8, name: "Trésor - Lancôme", category: "mujer" },
-  { id: 11, name: "Coco Chanel", category: "mujer" },
-  { id: 13, name: "Opium - Yves Saint Laurent", category: "mujer" },
-  { id: 20, name: "Ejemplo Hombre", category: "hombre" },
-  { id: 30, name: "Ejemplo Infantil", category: "infantil" },
-];
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import products from "./data/products.json";
 
 const categories = ["todos", "mujer", "hombre", "infantil"];
 
@@ -35,13 +25,31 @@ function App() {
   }, [cart]);
 
   const addToCart = (product) => {
-    if (!cart.find((item) => item.id === product.id)) {
+    if (!cart.find((item) => item.id === product.id && item.tipo === product.tipo)) {
       setCart([...cart, product]);
+      toast.success(`Se ha añadido ${product.name}${product.tipo ? ` (${product.tipo})` : ""} a la cesta`, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        style: { background: "#b6f5c3", color: "#222", fontWeight: "bold", textAlign: "center", minWidth: "500px", maxWidth: "90vw" },
+      });
     }
   };
 
   const removeFromCart = (producto) => {
     setCart(cart.filter(item => !(item.id === producto.id && item.tipo === producto.tipo)));
+    toast.info(`Se ha eliminado ${producto.name}${producto.tipo ? ` (${producto.tipo})` : ""} de la cesta`, {
+      position: "top-center",
+      autoClose: 2000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+      style: { background: "#fa8072", color: "#fff", fontWeight: "bold", textAlign: "center", minWidth: "500px", maxWidth: "90vw" },
+    });
   };
 
   const isInCart = (productId) => cart.some((item) => item.id === productId);
@@ -57,7 +65,9 @@ function App() {
   // Filtrar productos por categoría y búsqueda
   const filteredProducts = products.filter(
   (product) =>
-    (selectedCategory === "todos" || product.category === selectedCategory) &&
+    (selectedCategory === "todos" || (Array.isArray(product.category)
+    ? product.category.includes(selectedCategory)
+    : product.category === selectedCategory)) &&
     (
       product.name.toLowerCase().includes(search.toLowerCase()) ||
       (search !== "" && !isNaN(search) && product.id.toString() === search)
@@ -66,6 +76,7 @@ function App() {
 
   return (
     <div>
+      <ToastContainer icon={false} />
       <Navbar
         cartCount={cart.length}
         onCartClick={() => setCartOpen(!cartOpen)}
